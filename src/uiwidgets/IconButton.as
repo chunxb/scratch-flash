@@ -142,7 +142,7 @@ public class IconButton extends Sprite {
 		return arrow;
 	}
 
-	private function redraw():void {
+	protected function redraw():void {
 		var img:DisplayObject = buttonIsOn ? onImage : offImage;
 		if (mouseIsOver && !buttonIsOn) img = onImage;
 		while (numChildren > 0) removeChildAt(0);
