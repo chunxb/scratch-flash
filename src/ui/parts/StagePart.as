@@ -56,7 +56,7 @@ public class StagePart extends UIPart {
 
 	private var playButton:Sprite; // YouTube-like play button in center of screen; used by Kiosk version
 	private var userNameWarning:Sprite; // Container for privacy warning message for projects that use username block
-	private var runButtonOnTicks:int;
+	protected var runButtonOnTicks:int;
 
 	// x-y readouts
 	private var readouts:Sprite; // readouts that appear below the stage
@@ -275,7 +275,7 @@ public class StagePart extends UIPart {
 		if (app.editMode) updateMouseReadout();
 	}
 
-	private function updateRunStopButtons():void {
+	protected function updateRunStopButtons():void {
 		// Update the run/stop buttons.
 		// Note: To ensure that the user sees at least a flash of the
 		// on button, it stays on a minumum of two display cycles.
