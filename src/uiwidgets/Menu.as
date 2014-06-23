@@ -40,6 +40,7 @@ public class Menu extends Sprite {
 	public static var stringCollectionMode:Boolean;
 
 	public var clientFunction:Function; // if not null, called when menu interaction is done
+	public var closeFunction:Function; // if not null, called when menu is hidden
 	public var color:int;
 	public var minWidth:int;
 	public var itemHeight:int;
@@ -59,6 +60,10 @@ public class Menu extends Sprite {
 		this.menuName = menuName;
 		this.color = color;
 		this.itemHeight = itemHeight;
+	}
+
+	public function setCloseFunction(closeFunction:Function):void {
+		this.closeFunction = closeFunction;
 	}
 
 	public function addItem(label:String, value:* = null, enabled:Boolean = true, checkmark:Boolean = false):void {
@@ -186,6 +191,7 @@ public class Menu extends Sprite {
 		const scrollInset:int = 6;
 		if (parent == null) {
 			removeEventListener(Event.ENTER_FRAME, step);
+			if (closeFunction != null) closeFunction();
 			return;
 		}
 
