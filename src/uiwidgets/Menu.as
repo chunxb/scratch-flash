@@ -44,15 +44,15 @@ public class Menu extends Sprite {
 	public var minWidth:int;
 	public var itemHeight:int;
 
-	private static var menuJustCreated:Boolean;
+	protected static var menuJustCreated:Boolean;
 
-	private var menuName:String = '';
-	private var allItems:Array = [];
-	private var firstItemIndex:int = 0;
-	private var maxHeight:int;
-	private var maxScrollIndex:int;
-	private var upArrow:Shape;
-	private var downArrow:Shape;
+	protected var menuName:String = '';
+	protected var allItems:Array = [];
+	protected var firstItemIndex:int = 0;
+	protected var maxHeight:int;
+	protected var maxScrollIndex:int;
+	protected var upArrow:Shape;
+	protected var downArrow:Shape;
 
 	public function Menu(clientFunction:Function = null, menuName:String = '', color:int = 0xA0A0A0, itemHeight:int = 28) {
 		this.clientFunction = clientFunction;
@@ -128,7 +128,7 @@ public class Menu extends Sprite {
 		}
 	}
 
-	private function prepMenu(stage:Stage):void {
+	protected function prepMenu(stage:Stage):void {
 		var i:int, maxW:int = minWidth;
 		var item:MenuItem;
 		while (allItems.length && allItems[allItems.length-1].isLine()) allItems.pop();
@@ -155,14 +155,14 @@ public class Menu extends Sprite {
 		addShadowFilter();
 	}
 
-	private function makeArrows(w:int):void {
+	protected function makeArrows(w:int):void {
 		upArrow = makeArrow(true);
 		downArrow = makeArrow(false);
 		upArrow.x = downArrow.x = (w / 2) - 2;
 		upArrow.y = 2;
 	}
 
-	private function makeArrow(up:Boolean):Shape {
+	protected function makeArrow(up:Boolean):Shape {
 		var arrow:Shape = new Shape();
 		var g:Graphics = arrow.graphics;
 		g.beginFill(0xFFFFFF);
@@ -179,10 +179,10 @@ public class Menu extends Sprite {
 		return arrow;
 	}
 
-	private var scrollMSecs:int = 40;
-	private var lastTime:int;
+	protected var scrollMSecs:int = 40;
+	protected var lastTime:int;
 
-	private function step(e:Event):void {
+	protected function step(e:Event):void {
 		const scrollInset:int = 6;
 		if (parent == null) {
 			removeEventListener(Event.ENTER_FRAME, step);
@@ -197,7 +197,7 @@ public class Menu extends Sprite {
 		if ((localY > (this.height - scrollInset)) && (firstItemIndex < maxScrollIndex)) scrollBy(1);
 	}
 
-	private function scrollBy(delta:int):void {
+	protected function scrollBy(delta:int):void {
 		firstItemIndex += delta;
 		var nextY:int = 1;
 		// remove any existing children
@@ -220,7 +220,7 @@ public class Menu extends Sprite {
 		}
 	}
 
-	private function addShadowFilter():void {
+	protected function addShadowFilter():void {
 		var f:DropShadowFilter = new DropShadowFilter();
 		f.blurX = f.blurY = 5;
 		f.distance = 3;
