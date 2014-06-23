@@ -459,7 +459,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 
 	/* Stack cleanup */
 
-	private function cleanup():void {
+	protected function cleanup():void {
 		// Cleanup the layout of stacks and blocks in the scripts pane.
 		// Steps:
 		//	1. Collect stacks and sort by x
