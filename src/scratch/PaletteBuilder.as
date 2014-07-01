@@ -91,7 +91,7 @@ public class PaletteBuilder {
 				var defaultArgs:Array = targetObj.defaultArgsFor(spec[3], spec.slice(4));
 				var label:String = spec[0];
 				if(targetObj.isStage && spec[3] == 'whenClicked') label = 'when Stage clicked';
-				var block:Block = new Block(label, spec[1], blockColor, spec[3], defaultArgs);
+				var block:Block = BlockIO.makeBlock(label, spec[1], blockColor, spec[3], defaultArgs);
 				var showCheckbox:Boolean = isCheckboxReporter(spec[3]);
 				if (showCheckbox) addReporterCheckbox(block, palette, nextY);
 				nextY = addItem(block, palette, nextY, showCheckbox);
@@ -131,7 +131,7 @@ public class PaletteBuilder {
 		if (definitions.length > 0) {
 			nextY += 5;
 			for each (var proc:Block in definitions) {
-				var b:Block = new Block(proc.spec, ' ', Specs.procedureColor, Specs.CALL, proc.defaultArgValues);
+				var b:Block = BlockIO.makeBlock(proc.spec, ' ', Specs.procedureColor, Specs.CALL, proc.defaultArgValues);
 				nextY = addItem(b, palette, nextY);
 			}
 			nextY += 5;
@@ -156,7 +156,7 @@ public class PaletteBuilder {
 		if (varNames.length > 0) {
 			for each (var n:String in varNames) {
 				addVariableCheckbox(n, false, palette, nextY);
-				addItem(new Block(n, 'r', catColor, Specs.GET_VAR), palette, nextY, true);
+				addItem(BlockIO.makeBlock(n, 'r', catColor, Specs.GET_VAR), palette, nextY, true);
 			}
 			nextY += 10;
 			addBlocksForCategory(Specs.dataCategory, catColor, palette, nextY);
@@ -171,7 +171,7 @@ public class PaletteBuilder {
 		if (listNames.length > 0) {
 			for each (n in listNames) {
 				addVariableCheckbox(n, true, palette, nextY);
-				nextY = addItem(new Block(n, 'r', catColor, Specs.GET_LIST), palette, nextY, true);
+				nextY = addItem(BlockIO.makeBlock(n, 'r', catColor, Specs.GET_LIST), palette, nextY, true);
 			}
 			nextY += 10;
 			nextY = addBlocksForCategory(Specs.listCategory, catColor, palette, nextY);
@@ -232,7 +232,7 @@ public class PaletteBuilder {
 		function addBlockHat(dialog:DialogBox):void {
 			var spec:String = specEditor.spec().replace(/^\s+|\s+$/g, '');
 			if (spec.length == 0) return;
-			var newHat:Block = new Block(spec, 'p', Specs.procedureColor, Specs.PROCEDURE_DEF);
+			var newHat:Block = BlockIO.makeBlock(spec, 'p', Specs.procedureColor, Specs.PROCEDURE_DEF);
 			newHat.parameterNames = specEditor.inputNames();
 			newHat.defaultArgValues = specEditor.defaultArgValues();
 			newHat.warpProcFlag = specEditor.warpFlag();
@@ -391,7 +391,7 @@ public class PaletteBuilder {
 			if (spec.length >= 3) {
 				var op:String = opPrefix + spec[2];
 				var defaultArgs:Array = spec.slice(3);
-				var block:Block = new Block(spec[1], spec[0], blockColor, op, defaultArgs);
+				var block:Block = BlockIO.makeBlock(spec[1], spec[0], blockColor, op, defaultArgs);
 				var showCheckbox:Boolean = (spec[0] == 'r' && defaultArgs.length == 0);
 				if (showCheckbox) addReporterCheckbox(block, palette, nextY);
 				nextY = addItem(block, palette, nextY, showCheckbox);

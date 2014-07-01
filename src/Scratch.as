@@ -27,33 +27,22 @@ package {
 	import flash.display.*;
 	import flash.events.*;
 	import flash.external.ExternalInterface;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.net.FileReference;
-	import flash.net.LocalConnection;
+	import flash.geom.*;
+	import flash.net.*;
 	import flash.system.*;
 	import flash.text.*;
 	import flash.utils.*;
 
 	import interpreter.*;
 	import blocks.*;
-
 	import scratch.*;
-
-import ui.parts.base.ILibraryPart;
-
-import ui.parts.base.IScriptsPart;
-
-	import watchers.ListWatcher;
-
+	import watchers.*;
 	import translation.*;
-
 	import ui.*;
 	import ui.media.*;
 	import ui.parts.*;
-
+	import ui.parts.base.*;
 	import uiwidgets.*;
-
 	import util.*;
 
 public class Scratch extends Sprite {
@@ -76,6 +65,7 @@ public class Scratch extends Sprite {
 	public var palBuilder:PaletteBuilder;
 	public var extensionManager:ExtensionManager;
 	public var server:Server;
+	public var blockIO:BlockIO;
 	public var gh:GestureHandler;
 	public var projectID:String = '';
 	public var projectOwner:String = '';
@@ -127,6 +117,7 @@ public class Scratch extends Sprite {
 
 		stagePane = new ScratchStage();
 		gh = new GestureHandler(this, (loaderInfo.parameters['inIE'] == 'true'));
+		initBlockIO()
 		initInterpreter();
 		initRuntime();
 		initPaletteBuilder();
@@ -156,6 +147,10 @@ public class Scratch extends Sprite {
 //Analyze.collectAssets(0, 119110);
 //Analyze.checkProjects(56086, 64220);
 //Analyze.countMissingAssets();
+	}
+
+	protected function initBlockIO():void {
+		blockIO = new BlockIO();
 	}
 
 	protected function initTopBarPart():void {
@@ -196,10 +191,6 @@ public class Scratch extends Sprite {
 
 	public function getScratchStage():ScratchStage {
 		return new ScratchStage();
-	}
-
-	public function getPaletteBuilder():PaletteBuilder {
-		return new PaletteBuilder(this);
 	}
 
 	private function uncaughtErrorHandler(event:UncaughtErrorEvent):void

@@ -53,10 +53,10 @@ public class Block extends Sprite {
 
 	public static var argTextFormat:TextFormat;
 	public static var blockLabelFormat:TextFormat;
-	private static var vOffset:int;
+	protected static var vOffset:int;
 
 //	private static const blockLabelFormat:TextFormat = new TextFormat('LucidaBoldEmbedded', 10, 0xFFFFFF, true);
-	private static var useEmbeddedFont:Boolean = false;
+	protected static var useEmbeddedFont:Boolean = false;
 
 	public static var MenuHandlerFunction:Function;	// optional function to handle block and blockArg menus
 
@@ -87,35 +87,32 @@ public class Block extends Sprite {
 
 	public var base:BlockShape;
 
-	private var suppressLayout:Boolean; // used to avoid extra layouts during block initialization
-	private var labelsAndArgs:Array = [];
-	private var argTypes:Array = [];
-	private var elseLabel:TextField;
+	protected var labelsAndArgs:Array = [];
+	protected var argTypes:Array = [];
+	protected var elseLabel:TextField;
 
-	private var indentTop:int = 2, indentBottom:int = 3;
-	private var indentLeft:int = 4, indentRight:int = 3;
+	protected var indentTop:int = 2, indentBottom:int = 3;
+	protected var indentLeft:int = 4, indentRight:int = 3;
 
 	public var wasInScriptsPane:Boolean;
 	private var originalX:int, originalY:int;
 
 	public function Block(spec:String, type:String = " ", color:int = 0xD00000, op:* = 0, defaultArgs:Array = null) {
-		this.spec = Translator.map(spec);
-		this.type = type;
 		this.op = op;
-
-		if ((Specs.CALL == op) ||
-			(Specs.GET_LIST == op) ||
-			(Specs.GET_PARAM == op) ||
-			(Specs.GET_VAR == op) ||
-			(Specs.PROCEDURE_DEF == op) ||
-			('proc_declaration' == op)) {
-				this.spec = spec; // don't translate var/list/param reporters
-		}
+		this.spec = [Specs.CALL, Specs.GET_LIST, Specs.GET_PARAM, Specs.GET_VAR, Specs.PROCEDURE_DEF, 'proc_declaration'].indexOf(op) != -1 ? spec : Translator.map(spec);
+		setType(type, color);
 
 		if (color == -1) return; // copy for clone; omit graphics
 
-		var shape:int;
-		if ((type == " ") || (type == "") || (type == "w")) {
+		addChildAt(base, 0);
+		setSpec(this.spec, defaultArgs);
+
+		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
+	}
+
+	protected function setType(type:String, color:int):void {
+		this.type = type;
+		if (type == " " || type == "" || type == "w") {
 			base = new BlockShape(BlockShape.CmdShape, color);
 			indentTop = 3;
 		} else if (type == "b") {
@@ -127,7 +124,7 @@ public class Block extends Sprite {
 			this.type = 'r';
 			base = new BlockShape(BlockShape.NumberShape, color);
 			isReporter = true;
-			isRequester = (type == 'R');
+			isRequester = type == 'R';
 			indentTop = 2;
 			indentBottom = 2;
 			indentLeft = 6;
@@ -158,10 +155,6 @@ public class Block extends Sprite {
 		} else {
 			base = new BlockShape(BlockShape.RectShape, color);
 		}
-		addChildAt(base, 0);
-		setSpec(this.spec, defaultArgs);
-
-		addEventListener(FocusEvent.KEY_FOCUS_CHANGE, focusChange);
 	}
 
 	public function setSpec(newSpec:String, defaultArgs:Array = null):void {
@@ -230,11 +223,11 @@ public class Block extends Sprite {
 		// Create a block representing a procedure declaration to be embedded in a
 		// procedure definition header block. For each formal parameter, embed a
 		// reporter for that parameter.
-		var b:Block = new Block(spec, "o", Specs.procedureColor, 'proc_declaration');
+		var b:Block = BlockIO.makeBlock(spec, "o", Specs.procedureColor, 'proc_declaration');
 		if (!parameterNames) parameterNames = [];
 		for (var i:int = 0; i < parameterNames.length; i++) {
 			var argType:String = (typeof(defaultArgValues[i]) == 'boolean') ? 'b' : 'r';
-			var pBlock:Block = new Block(parameterNames[i], argType, Specs.parameterColor, Specs.GET_PARAM);
+			var pBlock:Block = BlockIO.makeBlock(parameterNames[i], argType, Specs.parameterColor, Specs.GET_PARAM);
 			pBlock.parameterIndex = i;
 			b.setArg(i, pBlock);
 		}
@@ -372,7 +365,6 @@ public class Block extends Sprite {
 
 	public function fixArgLayout():void {
 		var item:DisplayObject, i:int;
-		if (suppressLayout) return;
 		var x:int = indentLeft - indentAjustmentFor(labelsAndArgs[0]);
 		var maxH:int = 0;
 		for (i = 0; i < labelsAndArgs.length; i++) {
@@ -403,7 +395,7 @@ public class Block extends Sprite {
 		collectArgs();
 	}
 
-	private function indentAjustmentFor(item:*):int {
+	protected function indentAjustmentFor(item:*):int {
 		var itemType:String = '';
 		if (item is Block) itemType = Block(item).type;
 		if (item is BlockArg) itemType = BlockArg(item).type;
@@ -443,7 +435,7 @@ public class Block extends Sprite {
 		}
 	}
 
-	private function fixElseLabel():void {
+	protected function fixElseLabel():void {
 		if (elseLabel) {
 			var metrics:TextLineMetrics = elseLabel.getLineMetrics(0);
 			var dy:int = (metrics.ascent + metrics.descent) / 2;
@@ -455,7 +447,7 @@ public class Block extends Sprite {
 	public function duplicate(forClone:Boolean, forStage:Boolean = false):Block {
 		var newSpec:String = spec;
 		if (forStage && op == 'whenClicked') newSpec = 'when Stage clicked';
-		var dup:Block = new Block(newSpec, type, (int)(forClone ? -1 : base.color), op);
+		var dup:Block = BlockIO.makeBlock(newSpec, type, (int)(forClone ? -1 : base.color), op);
 		dup.isRequester = isRequester;
 		dup.parameterNames = parameterNames;
 		dup.defaultArgValues = defaultArgValues;
@@ -522,7 +514,7 @@ public class Block extends Sprite {
 		for each (var arg:DisplayObject in args) addChild(arg); // fix for cloned proc bug xxx
 	}
 
-	private function collectArgs():void {
+	protected function collectArgs():void {
 		var i:int;
 		args = [];
 		for (i = 0; i < labelsAndArgs.length; i++) {
@@ -655,7 +647,7 @@ public class Block extends Sprite {
 		return result;
 	}
 
-	private function argOrLabelFor(s:String, c:int):DisplayObject {
+	protected function argOrLabelFor(s:String, c:int):DisplayObject {
 		// Possible token formats:
 		//	%<single letter>
 		//	%m.<menuName>
@@ -677,7 +669,7 @@ public class Block extends Sprite {
 		return makeLabel(s);
 	}
 
-	private function makeLabel(label:String):TextField {
+	protected function makeLabel(label:String):TextField {
 		var text:TextField = new TextField();
 		text.autoSize = TextFieldAutoSize.LEFT;
 		text.selectable = false;
@@ -728,7 +720,7 @@ public class Block extends Sprite {
 	public function duplicateStack(deltaX:Number, deltaY:Number):void {
 		if (isProcDef()) return; // don't duplicate procedure definition
 		var forStage:Boolean = Scratch.app.viewedObj() && Scratch.app.viewedObj().isStage;
-		var newStack:Block = BlockIO.stringToStack(BlockIO.stackToString(this), forStage);
+		var newStack:Block = Scratch.app.blockIO.stringToStack(Scratch.app.blockIO.stackToString(this), forStage);
 		newStack.x = x + deltaX;
 		newStack.y = y + deltaY;
 		parent.addChild(newStack);

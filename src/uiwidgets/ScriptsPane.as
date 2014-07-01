@@ -369,7 +369,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 			if (a.length < 1) continue;
 			var blockOrComment:* =
 				(a[0] is Array) ?
-					BlockIO.arrayToStack(a, forStage) :
+					Scratch.app.blockIO.arrayToStack(a, forStage) :
 					ScratchComment.fromArray(a);
 			blockOrComment.x = dropP.x;
 			blockOrComment.y = dropP.y;
