@@ -35,20 +35,20 @@ package uiwidgets {
 
 public class ScriptsPane extends ScrollFrameContents {
 
-	private const INSERT_NORMAL:int = 0;
-	private const INSERT_ABOVE:int = 1;
-	private const INSERT_SUB1:int = 2;
-	private const INSERT_SUB2:int = 3;
-	private const INSERT_WRAP:int = 4;
+	protected const INSERT_NORMAL:int = 0;
+	protected const INSERT_ABOVE:int = 1;
+	protected const INSERT_SUB1:int = 2;
+	protected const INSERT_SUB2:int = 3;
+	protected const INSERT_WRAP:int = 4;
 
 	public var app:Scratch;
 
 	private var viewedObj:ScratchObj;
 	private var commentLines:Shape;
 
-	private var possibleTargets:Array = [];
-	private var nearestTarget:Array = [];
-	private var feedbackShape:BlockShape;
+	protected var possibleTargets:Array = [];
+	protected var nearestTarget:Array = [];
+	protected var feedbackShape:BlockShape;
 
 	public function ScriptsPane(app:Scratch) {
 		this.app = app;
@@ -198,7 +198,7 @@ public class ScriptsPane extends ScrollFrameContents {
 		app.runtime.blockDropped(b);
 	}
 
-	private function findTargetsFor(b:Block):void {
+	protected function findTargetsFor(b:Block):void {
 		possibleTargets = [];
 		var bEndWithTerminal:Boolean = b.bottomBlock().isTerminal;
 		var bCanWrap:Boolean = b.base.canHaveSubstack1() && !b.subStack1; // empty C or E block
@@ -228,7 +228,7 @@ public class ScriptsPane extends ScrollFrameContents {
 		}
 	}
 
-	private function reporterAllowedInStack(r:Block, stack:Block):Boolean {
+	protected function reporterAllowedInStack(r:Block, stack:Block):Boolean {
 		// True if the given reporter block can be inserted in the given stack.
 		// Procedure parameter reporters can only be added to a block definition
 		// that defines parameter.
@@ -238,7 +238,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		return (top.op == Specs.PROCEDURE_DEF) && (top.parameterNames.indexOf(r.spec) > -1);
 	}
 
-	private function findCommandTargetsIn(stack:Block, endsWithTerminal:Boolean):void {
+	protected function findCommandTargetsIn(stack:Block, endsWithTerminal:Boolean):void {
 		var target:Block = stack;
 		while (target != null) {
 			var p:Point = target.localToGlobal(new Point(0, 0));
@@ -250,12 +250,12 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 				p = target.localToGlobal(new Point(0, target.base.nextBlockY() - 3));
 				possibleTargets.push([p, target, INSERT_NORMAL]);
 			}
-			if (target.base.canHaveSubstack1()) {
-				p = target.localToGlobal(new Point(15, target.base.substack1y()));
+			if (target.base.canHaveSubstack1() && (!endsWithTerminal || target.subStack2 == null)) {
+				p = target.localToGlobal(new Point(BlockShape.SubstackInset, target.base.substack1y()));
 				possibleTargets.push([p, target, INSERT_SUB1]);
 			}
-			if (target.base.canHaveSubstack2()) {
-				p = target.localToGlobal(new Point(15, target.base.substack2y()));
+			if (target.base.canHaveSubstack2() && (!endsWithTerminal || target.subStack2 == null)) {
+				p = target.localToGlobal(new Point(BlockShape.SubstackInset, target.base.substack2y()));
 				possibleTargets.push([p, target, INSERT_SUB2]);
 			}
 			if (target.subStack1 != null) findCommandTargetsIn(target.subStack1, endsWithTerminal);
@@ -264,7 +264,7 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 		}
 	}
 
-	private function findReporterTargetsIn(stack:Block):void {
+	protected function findReporterTargetsIn(stack:Block):void {
 		var b:Block = stack, i:int;
 		while (b != null) {
 			for (i = 0; i < b.args.length; i++) {
@@ -282,10 +282,14 @@ return true; // xxx disable this check for now; it was causing confusion at Scra
 	}
 
 	private function addFeedbackShape():void {
-		if (feedbackShape == null) feedbackShape = new BlockShape();
+		if (feedbackShape == null) initFeedbackShape();
 		feedbackShape.setWidthAndTopHeight(10, 10);
 		hideFeedbackShape();
 		addChild(feedbackShape);
+	}
+
+	protected function initFeedbackShape():void {
+		feedbackShape = new BlockShape();
 	}
 
 	private function hideFeedbackShape():void {
